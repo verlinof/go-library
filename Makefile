@@ -1,8 +1,17 @@
+# Load .env file
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
+
 # Variables
 REPO_URL = https://github.com/verlinof/softlancer-go.git
 BUILD_DIR = ./build
 CMD_DIR = ./cmd
 ENV_FILE = .env
+
+# dsn
+DSN = ${DB_DRIVER}://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)
 
 # Environment Configurations
 ENV = development
@@ -12,20 +21,9 @@ GO_ENV = $(ENV)
 .PHONY: all
 all: run
 
-# Clone the repository
-.PHONY: clone
-clone:
-	git clone $(REPO_URL)
-
-# Run Migrations
-.PHONY: migrate
-migrate:
-	go run $(CMD_DIR)/migration/main.go
-
-# Revert Migrations
-.PHONY: migrate-down
-migrate-down:
-	go run $(CMD_DIR)/migration/down/main.go
+.PHONY: migrate-up
+migrate-up:
+	@GOOSE_DRIVER=${DB_DRIVER} GOOSE_DBSTRING=${DSN} goose --dir=./db/migration up
 
 # Run Seeders
 .PHONY: seed

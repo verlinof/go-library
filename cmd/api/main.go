@@ -21,9 +21,9 @@ func main() {
 
 	//Init GIN ENGINE
 	gin.SetMode(app_config.Config.GinMode)
-	app := gin.Default()
+	router := gin.Default()
 
-	app.Use(cors.New(cors.Config{
+	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
@@ -33,8 +33,8 @@ func main() {
 	}))
 
 	//Init Router
-	route.InitRoute(app)
+	route.InitRoute(router)
 
 	//Run Server
-	app.Run(":" + app_config.Config.AppPort)
+	router.Run(":" + app_config.Config.AppPort)
 }
