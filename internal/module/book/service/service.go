@@ -2,19 +2,32 @@ package book_service
 
 import (
 	"context"
+	"math"
 
 	"github.com/verlinof/golang-project-structure/db"
 	book_model "github.com/verlinof/golang-project-structure/internal/module/book/model"
+	pkg_success "github.com/verlinof/golang-project-structure/pkg/success"
 )
 
-func (b *BookService) GetAllBook(ctx context.Context) ([]book_model.BookResponse, error) {
+func (b *BookService) GetAllBook(ctx context.Context, page int, perPage int) (*pkg_success.PaginationData, error) {
 	var books []book_model.BookResponse
-	err := db.DB.WithContext(ctx).Table("books").Find(&books).Error
+	var totalRows int64
+
+	//Pagination System
+	offset := (page - 1) * perPage
+	db.DB.WithContext(ctx).Table("books").Count(&totalRows)
+
+	totalPage := math.Ceil(float64(totalRows) / float64(perPage))
+
+	err := db.DB.WithContext(ctx).Limit(perPage).Offset(offset).Table("books").Find(&books).Error
 	if err != nil {
-		return []book_model.BookResponse{}, err
+		return &pkg_success.PaginationData{}, err
 	}
 
-	return books, nil
+	//Response
+	response := pkg_success.SuccessPaginationData(books, page, int(totalPage), perPage, int(totalRows))
+
+	return response, nil
 }
 
 func (b *BookService) GetBookByID(ctx context.Context, id int) (book_model.BookResponse, error) {

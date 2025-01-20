@@ -13,13 +13,25 @@ import (
 )
 
 func (bookHandler *BookHandler) GetAllBook(c *gin.Context) {
-	books, err := bookHandler.bookService.GetAllBook(c.Request.Context())
+	//Pagination
+	pageStr := c.Query("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	perPageStr := c.Query("per_page")
+	perPage, err := strconv.Atoi(perPageStr)
+	if err != nil || perPage < 1 {
+		perPage = 10
+	}
+
+	books, err := bookHandler.bookService.GetAllBook(c.Request.Context(), page, perPage)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, pkg_error.NewInternalServerError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, pkg_success.SuccessGetData(books))
+	c.JSON(http.StatusOK, books)
 }
 
 func (bookHandler *BookHandler) GetBookByID(c *gin.Context) {
