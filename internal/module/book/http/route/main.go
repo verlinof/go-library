@@ -10,4 +10,6 @@ func BookRoute(router *gin.RouterGroup, bookHandler book_http.BookHandler) {
 	bookRoutes.GET("/", bookHandler.GetAllBook)
 	bookRoutes.GET("/:id", bookHandler.GetBookByID)
 	bookRoutes.POST("/", bookHandler.CreateBook)
+	bookRoutes.PATCH("/:id", bookHandler.UpdateBook)
+	bookRoutes.DELETE("/:id", bookHandler.DeleteBook)
 }

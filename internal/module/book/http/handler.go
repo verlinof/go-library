@@ -67,3 +67,58 @@ func (bookHandler *BookHandler) CreateBook(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, pkg_success.SuccessCreateData(book))
 }
+
+func (bookHandler *BookHandler) UpdateBook(c *gin.Context) {
+	var updateBookRequest book_model.UpdateBookRequest
+	if err := c.ShouldBindJSON(&updateBookRequest); err != nil {
+		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(err))
+		return
+	}
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		// Jika konversi gagal, kembalikan error ke klien
+		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(fmt.Errorf("invalid ID: %s", idStr)))
+		return
+	}
+
+	// error handling
+	book, err := bookHandler.bookService.UpdateBook(c.Request.Context(), id, updateBookRequest)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, pkg_error.NewNotFound(fmt.Errorf("book with ID %d not found", id)))
+			return
+		} else if err == gorm.ErrDuplicatedKey {
+			c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(err))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, pkg_error.NewInternalServerError(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, pkg_success.SuccessGetData(book))
+}
+
+func (bookHandler *BookHandler) DeleteBook(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		// Jika konversi gagal, kembalikan error ke klien
+		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(fmt.Errorf("invalid ID: %s", idStr)))
+		return
+	}
+
+	err = bookHandler.bookService.DeleteBook(c.Request.Context(), id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, pkg_error.NewNotFound(fmt.Errorf("book with ID %d not found", id)))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, pkg_error.NewInternalServerError(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, pkg_success.SuccessDeleteData(id))
+}

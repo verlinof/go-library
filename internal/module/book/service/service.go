@@ -51,5 +51,36 @@ func (b *BookService) CreateBook(ctx context.Context, createBookRequest book_mod
 }
 
 func (b *BookService) UpdateBook(ctx context.Context, id int, updateBookRequest book_model.UpdateBookRequest) (book_model.BookResponse, error) {
-	return book_model.BookResponse{}, nil
+	var book book_model.Book
+	err := db.DB.WithContext(ctx).Table("books").Where("id = ?", id).First(&book).Error
+	if err != nil {
+		return book_model.BookResponse{}, err
+	}
+
+	book.Title = updateBookRequest.Title
+	book.Description = updateBookRequest.Description
+
+	err = db.DB.WithContext(ctx).Table("books").Save(&book).Error
+	if err != nil {
+		return book_model.BookResponse{}, err
+	}
+
+	bookResponse := book_model.BookResponse(book)
+
+	return bookResponse, nil
+}
+
+func (b *BookService) DeleteBook(ctx context.Context, id int) error {
+	var book book_model.Book
+	err := db.DB.WithContext(ctx).Table("books").Where("id = ?", id).First(&book).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.DB.WithContext(ctx).Table("books").Where("id = ?", id).Delete(&book_model.Book{}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
