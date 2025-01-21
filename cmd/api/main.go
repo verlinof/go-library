@@ -15,6 +15,11 @@ import (
 )
 
 func main() {
+	//Init Global Config
+	app_config.Config = app_config.LoadConfig()
+	db_config.Config = db_config.LoadConfig()
+	redis_config.Config = redis_config.LoadConfig()
+
 	//Logger Config
 	logger := zap.Must(zap.NewProduction())
 	if os.Getenv("GIN_MODE") == "debug" {
@@ -23,11 +28,6 @@ func main() {
 	defer logger.Sync()
 
 	logger.Info("Hello from Zap logger!")
-
-	//Init Global Config
-	app_config.Config = app_config.LoadConfig()
-	db_config.Config = db_config.LoadConfig()
-	redis_config.Config = redis_config.LoadConfig()
 
 	//Connect Database
 	db.ConnectDatabase()

@@ -65,6 +65,13 @@ func (bookHandler *BookHandler) CreateBook(c *gin.Context) {
 		return
 	}
 
+	//Validate the struct
+	err := bookHandler.xValidator.Validate(createBookRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(err))
+		return
+	}
+
 	//Error Handling
 	book, err := bookHandler.bookService.CreateBook(c.Request.Context(), createBookRequest)
 	if err != nil {
@@ -91,6 +98,13 @@ func (bookHandler *BookHandler) UpdateBook(c *gin.Context) {
 	if err != nil {
 		// Jika konversi gagal, kembalikan error ke klien
 		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(fmt.Errorf("invalid ID: %s", idStr)))
+		return
+	}
+
+	// Validate struct
+	err = bookHandler.xValidator.Validate(updateBookRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, pkg_error.NewBadRequest(err))
 		return
 	}
 
